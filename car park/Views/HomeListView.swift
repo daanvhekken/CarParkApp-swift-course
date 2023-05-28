@@ -8,18 +8,46 @@
 import SwiftUI
 
 struct HomeListView: View {
-    @ObservedObject private var homeViewModel = HomeViewModel()
     @ObservedObject private var authViewModel = AuthViewModel()
+    @ObservedObject private var homeViewModel = HomeViewModel()
+        
+    init(authViewModel: AuthViewModel, homeViewModel: HomeViewModel) {
+        self.authViewModel = authViewModel
+        self.homeViewModel = homeViewModel
+    }
 
     @State private var addHomeSheet: Bool = false
+    @State private var isActionVisible: Bool = false
     
     var body: some View {
       NavigationView {
         ZStack {
             if homeViewModel.homes.count > 0 {
                 List(homeViewModel.homes) { home in
-                    HomeRowView(home: home)
+                    HomeRowView(home: home, isDefault: authViewModel.appUser.defaultHomeId == home.id)
                         .padding(.vertical, 4)
+                        .onLongPressGesture(minimumDuration: 1) {
+                            withAnimation(.easeOut) {
+                                isActionVisible.toggle()
+                            }
+                        }
+                        .contextMenu {
+                            if authViewModel.appUser.defaultHomeId == home.id {
+                                Button {
+                                    authViewModel.unsetAsDefault()
+                                    isActionVisible.toggle()
+                                } label: {
+                                    Label("Remove home as default", systemImage: "heart")
+                                }
+                            } else {
+                                Button {
+                                    authViewModel.setAsDefault(homeId: home.id)
+                                    isActionVisible.toggle()
+                                } label: {
+                                    Label("Add home as default", systemImage: "heart.fill")
+                                }
+                            }
+                        }
                 }.navigationBarTitle("Homes")
             } else {
                 VStack(alignment: .leading) {
@@ -49,16 +77,15 @@ struct HomeListView: View {
           .onAppear {
               homeViewModel.fetchData()
           }
-        .navigationBarTitle("Numbers")
           
         .sheet(isPresented: $addHomeSheet, content: {
-            HomeAddView(addHomeSheet: $addHomeSheet)
+            HomeAddView(authViewModel: authViewModel, homeViewModel: homeViewModel, addHomeSheet: $addHomeSheet)
         })
     }
 }
 
-struct HomeListView_Previews: PreviewProvider {
-    static var previews: some View {
-        HomeListView()
-    }
-}
+//struct HomeListView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        HomeListView()
+//    }
+//}

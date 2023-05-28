@@ -52,14 +52,15 @@ class HomeViewModel: ObservableObject {
                     image: image
                 )
             }
-    
         }
     }
     
     func createHome(homeName: String?, city: String?, street: String?, postalCode: String?, houseNumber: String?, fileName: String?) {
         guard let userUID = userUID else { return }
+                
         
-        db.collection("homes").addDocument(data: [
+        var ref: DocumentReference? = nil
+        ref = db.collection("homes").addDocument(data: [
             "home_name": homeName as Any,
             "user_uid": userUID,
             "city": city as Any,
@@ -67,13 +68,31 @@ class HomeViewModel: ObservableObject {
             "postal_code": postalCode as Any,
             "house_number": houseNumber as Any,
             "image": fileName as Any
-        ]) { error in
-            if let error = error {
-                print("Failed to add home to Firestore: \(error)")
+        ]) { err in
+            if let err = err {
+                print("Error adding document: \(err)")
             } else {
-                print("Home added to Firestore successfully.")
+                if self.homes.isEmpty {
+                    self.db.collection("users").document(userUID).setData(["default_home_id": ref!.documentID], merge: true) { error in
+                        if let error = error {
+                            print("Error updating document: \(error)")
+                        } else {
+                            print("Document updated successfully!")
+                        }
+                    }
+                }
+                
+                let newHome = Home(
+                    id: ref!.documentID,
+                    homeName: homeName!,
+                    street: street!,
+                    houseNumber: houseNumber!,
+                    city: city!,
+                    postalCode: postalCode!,
+                    userUid: userUID,
+                    image: fileName)
+                self.homes.append(newHome)
             }
         }
     }
-
 }

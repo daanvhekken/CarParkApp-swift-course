@@ -1,6 +1,19 @@
 import SwiftUI
 import FirebaseAuth
 import Firebase
+import FirebaseStorage
+
+class FirebaseManager: NSObject {
+    let storage: Storage
+    
+    static let shared = FirebaseManager()
+    
+    override init() {
+        self.storage = Storage.storage()
+        
+        super.init()
+    }
+}
 
 struct ContentView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel

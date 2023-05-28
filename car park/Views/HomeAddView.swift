@@ -6,27 +6,18 @@
 //
 
 import SwiftUI
-import FirebaseStorage
-
-class FirebaseManager: NSObject {
-    let storage: Storage
-    
-    static let shared = FirebaseManager()
-    
-    override init() {
-        self.storage = Storage.storage()
-        
-        super.init()
-    }
-    
-}
 
 struct HomeAddView: View {
-    @StateObject private var homeViewMdel = HomeViewModel()
-    @StateObject private var authViewModel = AuthViewModel()
-    
-    
+    @ObservedObject private var authViewModel = AuthViewModel()
+    @ObservedObject private var homeViewModel = HomeViewModel()
     @Binding var addHomeSheet: Bool
+    
+    init(authViewModel: AuthViewModel, homeViewModel: HomeViewModel, addHomeSheet: Binding<Bool>) {
+        self.authViewModel = authViewModel
+        self.homeViewModel = homeViewModel
+        self._addHomeSheet = addHomeSheet
+    }
+    
     @State private var homeName = "" 
     @State private var city = ""
     @State private var street = ""
@@ -43,7 +34,6 @@ struct HomeAddView: View {
                 Button {
                     shouldShowImagePicker.toggle()
                 } label: {
-                    
                     VStack {
                         if let image = self.image {
                             Image(uiImage: image)
@@ -71,7 +61,6 @@ struct HomeAddView: View {
                             .foregroundColor(Color(.systemBlue)),
                         alignment: .bottom
                     )
-
                 TextField("City", text: $city)
                     .frame(height: 50)
                     .overlay(
@@ -119,10 +108,11 @@ struct HomeAddView: View {
                     addHomeSheet = false
                     let fileName = persistImageToStorage()
                     print(fileName)
-                homeViewMdel.createHome(homeName: homeName, city: city, street: street, postalCode: postalCode, houseNumber: house_number, fileName: fileName)
+                homeViewModel.createHome(homeName: homeName, city: city, street: street, postalCode: postalCode, houseNumber: house_number, fileName: fileName)
                 }, label: {
                     Text("Save")
                 })
+                .disabled(homeName.isEmpty || city.isEmpty || street.isEmpty || house_number.isEmpty || postalCode.isEmpty) // Disable the button if any of the fields are empty
             )
             .fullScreenCover(isPresented: $shouldShowImagePicker, onDismiss: nil) {
                 ImagePicker(image: $image)
@@ -150,7 +140,6 @@ struct HomeAddView: View {
                 }
                 
 //                self.loginStatusMessage = "Successfully stored image with url: \(url?.absoluteString ?? "")"
-                print(url?.absoluteString)
             }
         }
         return newFileName

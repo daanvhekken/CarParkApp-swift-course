@@ -68,3 +68,32 @@ struct AsyncImage: View {
         }
     }
 }
+
+
+struct AsyncImage2: View {
+    @StateObject private var loader: ImageLoader
+
+    init(url: URL, placeholder: Image = Image(systemName: "photo")) {
+        _loader = StateObject(wrappedValue: ImageLoader(url: url))
+    }
+
+    var body: some View {
+        image
+            .onAppear(perform: loader.load)
+            .onDisappear(perform: loader.cancel)
+    }
+
+    private var image: some View {
+        Group {
+            if loader.imageData.isEmpty {
+                Image(systemName: "house.circle.fill").iconModifier()
+            } else {
+                Image(uiImage: UIImage(data: loader.imageData)!)
+                    .resizable()
+                    .scaledToFit()
+                    .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.15), radius: 8, x: 6, y: 8)
+            }
+        }
+    }
+}
+

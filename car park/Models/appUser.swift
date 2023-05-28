@@ -9,11 +9,11 @@ import Foundation
 
 struct AppUser: Identifiable {
     var id: String
-    var defaultHomeName: String
+    var defaultHomeId: String?
 
     
-    init(id: String, defaultHomeName: String){
+    init(id: String, defaultHomeId: String?){
         self.id = id
-        self.defaultHomeName = defaultHomeName
+        self.defaultHomeId = defaultHomeId
     }
 }

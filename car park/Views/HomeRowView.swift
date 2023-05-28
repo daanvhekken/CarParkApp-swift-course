@@ -1,50 +1,19 @@
-//
-//  Created by Robert Petras
-//  Credo Academy ♥ Design and Code
-//  https://credo.academy
-//
-
 import SwiftUI
-import FirebaseStorage
 
-
-
-class ImageLoaderTest: ObservableObject {
-    @Published var imageURL: URL?
-    
-    private let storage = Storage.storage()
-    private let imagePath: String
-    private lazy var storageRef = self.storage.reference()
-    private lazy var imageRef = self.storageRef.child(imagePath)
-
-    init(imagePath: String) {
-        self.imagePath = imagePath
-    }
-
-    func loadImage() {
-        self.imageRef.downloadURL { url, error in
-            if let error = error {
-                print("Error getting download URL: \(error)")
-            } else {
-                if let url = url {
-                    DispatchQueue.main.async {
-                        self.imageURL = url
-                    }
-                }
-            }
-        }
-    }
-}
 
 struct HomeRowView: View {
-    var home: Home
-    
-    @StateObject private var loader: ImageLoaderTest
+    @ObservedObject private var authViewModel = AuthViewModel()
 
-    init(home: Home) {
+    var isDefault: Bool
+    var home: Home
+
+    @StateObject private var loader: ImageLoaderTest
+    
+    init(home: Home, isDefault: Bool) {
         self.home = home
         let imagePath = home.image ?? "default_image_path.jpg"
         _loader = StateObject(wrappedValue: ImageLoaderTest(imagePath: imagePath))
+        self.isDefault = isDefault
     }
 
 
@@ -63,6 +32,16 @@ struct HomeRowView: View {
                 Text(home.street)
                     .font(.caption)
                     .foregroundColor(Color.secondary)
+            }
+            
+            Spacer()
+            
+            if isDefault {
+                HStack {
+                    Image(systemName: "heart.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                }
             }
         }.onAppear {
             if home.image != nil {

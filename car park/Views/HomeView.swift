@@ -8,15 +8,21 @@
 import SwiftUI
 import FirebaseAuth
 
+// Create a shared instance of HomeViewModel
+let authViewModel = AuthViewModel()
+let homeViewModel = HomeViewModel()
+
+
 struct HomeView: View {
-    @StateObject private var authViewModel = AuthViewModel()
-    @StateObject private var carViewModel = CarViewModel()
-    
     @State private var selectedIndex = 0
+    
+    let sharedAuthViewModel = authViewModel
+    let sharedHomeViewModel = homeViewModel
+    
     var body: some View {
 
         TabView {
-            HomeListView()
+            HomeListView(authViewModel: sharedAuthViewModel, homeViewModel: sharedHomeViewModel)
                 .onAppear {
                     self.selectedIndex = 0
                 }
@@ -24,7 +30,7 @@ struct HomeView: View {
                 .tabItem {
                     Image(systemName: "house")
                 }
-            CarListView()
+            CarListView(authViewModel: sharedAuthViewModel, homeViewModel: sharedHomeViewModel)
                 .onAppear {
                     self.selectedIndex = 1
                 }

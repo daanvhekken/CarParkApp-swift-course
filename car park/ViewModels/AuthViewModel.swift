@@ -5,10 +5,13 @@ import FirebaseFirestore
 final class AuthViewModel: ObservableObject {
     private let db = Firestore.firestore()
     @Published var userSession: FirebaseAuth.User?
+    @Published var appUser = AppUser(id: "", defaultHomeId: nil)
     @Published var errorDescr = ""
     
     init() {
         self.userSession = Auth.auth().currentUser
+        
+        self.fetchUser(user_uid: self.userSession?.uid)
     }
     
     func createUser(email: String, password: String, firstName: String, lastName: String) {
@@ -59,6 +62,35 @@ final class AuthViewModel: ObservableObject {
         }
     }
     
+    func fetchUser(user_uid: String?) {
+        if self.appUser.id != "" { return }
+        guard let userUID = user_uid else { return }
+
+        db.collection("users").whereField("uid", isEqualTo: userUID).getDocuments() { (querySnapshot, err) in
+            if let err = err {
+                print("Error getting documents: \(err)")
+                return
+            }
+
+            guard let documents = querySnapshot?.documents else {
+                print("No documents found")
+                return
+            }
+            
+            if !documents.isEmpty {
+                let user_document = documents[0]
+                
+                let id = user_document.documentID
+                let defaultHomeId = user_document.get("default_home_id") as? String
+                
+                self.appUser = AppUser(
+                    id: id,
+                    defaultHomeId: defaultHomeId
+                )
+            }
+        }
+    }
+    
     func signOut() {
         do {
             try Auth.auth().signOut()
@@ -76,6 +108,33 @@ final class AuthViewModel: ObservableObject {
             } else {
                 // User is signed out
                 self?.userSession = nil
+            }
+        }
+    }
+    
+    func setAsDefault(homeId: String) {
+        self.appUser.defaultHomeId = homeId
+        let documentRef = db.collection("users").document(self.appUser.id)
+            
+        documentRef.setData(["default_home_id": homeId], merge: true) { error in
+            if let error = error {
+                print("Error updating document: \(error)")
+            } else {
+                print("Document updated successfully!")
+            }
+        }
+    }
+    
+    func unsetAsDefault() {
+        self.appUser.defaultHomeId = nil
+        
+        let documentRef = db.collection("users").document(self.appUser.id)
+        
+        documentRef.updateData(["default_home_id": FieldValue.delete()]) { error in
+            if let error = error {
+                print("Error updating document: \(error)")
+            } else {
+                print("Document updated successfully!")
             }
         }
     }
