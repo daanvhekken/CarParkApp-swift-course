@@ -1,10 +1,3 @@
-//
-//  home.swift
-//  car park
-//
-//  Created by Daan Vanhekken on 03/11/2022.
-//
-
 import Foundation
 
 struct Home: Identifiable {

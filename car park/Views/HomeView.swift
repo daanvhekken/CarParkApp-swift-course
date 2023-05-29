@@ -1,10 +1,3 @@
-//
-//  HomeView.swift
-//  car park
-//
-//  Created by Daan Vanhekken on 30/10/2022.
-//
-
 import SwiftUI
 import FirebaseAuth
 

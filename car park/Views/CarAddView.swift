@@ -1,10 +1,3 @@
-//
-//  HomeAddView.swift
-//  car park
-//
-//  Created by Daan Vanhekken on 06/11/2022.
-//
-
 import SwiftUI
 
 struct CarAddView: View {

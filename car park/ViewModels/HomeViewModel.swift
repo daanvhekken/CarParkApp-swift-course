@@ -1,10 +1,3 @@
-//
-//  HomeViewModel.swift
-//  car park
-//
-//  Created by Daan Vanhekken on 03/11/2022.
-//
-
 import Foundation
 import FirebaseFirestore
 import FirebaseAuth
